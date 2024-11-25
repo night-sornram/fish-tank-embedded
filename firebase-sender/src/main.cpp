@@ -94,4 +94,20 @@ void loop()
       }
     }
   }
+  if(Firebase.ready() && signupOK)
+  {
+    if (Firebase.RTDB.getBool(&fbdo, "servo/bool"))
+    {
+      if(fbdo.boolData())
+      {
+        Serial1.println("ON");
+        Firebase.RTDB.setBool(&fbdo, "servo/bool", false);
+      }
+    }
+    else
+    {
+      Serial.println("Failed to get Servo status");
+    }
+
+  }
 }

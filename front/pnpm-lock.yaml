@@ -23,6 +23,9 @@ importers:
       react-dom:
         specifier: 19.0.0-rc-66855b96-20241106
         version: 19.0.0-rc-66855b96-20241106(react@19.0.0-rc-66855b96-20241106)
+      zustand:
+        specifier: ^5.0.1
+        version: 5.0.1(@types/react@18.3.12)(react@19.0.0-rc-66855b96-20241106)
     devDependencies:
       '@tailwindcss/typography':
         specifier: ^0.5.15
@@ -2012,6 +2015,24 @@ packages:
     resolution: {integrity: sha512-7r0XPzioN/Q9kXBro/XPnA6kznR73DHq+GXh5ON7ZozRO6aMjbmiBuKste2wslTFkC5d1dw0GooOCepZXJ2SAg==}
     engines: {node: '>= 14'}
     hasBin: true
+
+  zustand@5.0.1:
+    resolution: {integrity: sha512-pRET7Lao2z+n5R/HduXMio35TncTlSW68WsYBq2Lg1ASspsNGjpwLAsij3RpouyV6+kHMwwwzP0bZPD70/Jx/w==}
+    engines: {node: '>=12.20.0'}
+    peerDependencies:
+      '@types/react': '>=18.0.0'
+      immer: '>=9.0.6'
+      react: '>=18.0.0'
+      use-sync-external-store: '>=1.2.0'
+    peerDependenciesMeta:
+      '@types/react':
+        optional: true
+      immer:
+        optional: true
+      react:
+        optional: true
+      use-sync-external-store:
+        optional: true
 
 snapshots:
 
@@ -4781,3 +4802,8 @@ snapshots:
       strip-ansi: 7.1.0
 
   yaml@2.6.1: {}
+
+  zustand@5.0.1(@types/react@18.3.12)(react@19.0.0-rc-66855b96-20241106):
+    optionalDependencies:
+      '@types/react': 18.3.12
+      react: 19.0.0-rc-66855b96-20241106

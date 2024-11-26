@@ -14,21 +14,27 @@
 
 #define API_KEY "REPLACE_WITH_YOUR_FIREBASE_PROJECT_API_KEY"
 #define DATABASE_URL "REPLACE_WITH_YOUR_FIREBASE_DATABASE_URL"
-#define TX_PIN 17
-#define RX_PIN 16
+#define TX_PIN 23
+#define RX_PIN 22
 
-EspSoftwareSerial::UART myPort;
+EspSoftwareSerial::UART myPortTX;
+EspSoftwareSerial::UART myPortRX;
+
 FirebaseData fbdo;
 FirebaseAuth auth;
 FirebaseConfig config;
 bool signupOK = false;
 float waterLevel = 0;
 float waterTemp = 0;
+boolean servoStatus = false;
+String received = "";
+
 
 void setup()
 {
   Serial.begin(115200);
-  Serial1.begin(115200, SERIAL_8N1, RX_PIN, TX_PIN);
+  myPortTX.begin(38400, SWSERIAL_8N1, -1, TX_PIN,false);
+  myPortRX.begin(38400, SWSERIAL_8N1, RX_PIN, -1,false);
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
   Serial.print("Connecting to Wi-Fi");
   while (WiFi.status() != WL_CONNECTED)
@@ -60,22 +66,16 @@ void setup()
 
 void loop()
 {
-  if (Serial1.available())
+  if (myPortRX.available() > 0)
   {
-    String received = "";
-    received = Serial1.readStringUntil('\n');
-    Serial.println(received);
-    int tempStart = received.indexOf("Temperature: ") + 13;
-    int tempEnd = received.indexOf(" ℃");
-    int levelStart = received.indexOf("Water Level: ") + 13;
-    int levelEnd = received.indexOf(" mm");
-
-    waterTemp = received.substring(tempStart, tempEnd).toFloat();
-    waterLevel = received.substring(levelStart, levelEnd).toFloat();
+    received = myPortRX.readString();
+    int commaIndex = received.indexOf(',');
+    waterTemp = received.substring(0, commaIndex).toFloat();
+    waterLevel = received.substring(commaIndex + 1).toFloat();
 
     if (Firebase.ready() && signupOK)
     {
-      if (Firebase.RTDB.setFloat(&fbdo, "waterLevel/float", waterLevel))
+      if (Firebase.RTDB.setFloat(&fbdo, "embedded/waterLevel/float", waterLevel))
       {
         Serial.println("Water Level PASSED");
       }
@@ -84,7 +84,7 @@ void loop()
         Serial.println("Water Level FAILED");
       }
 
-      if (Firebase.RTDB.setFloat(&fbdo, "waterTemperature/float", waterTemp))
+      if (Firebase.RTDB.setFloat(&fbdo, "embedded/waterTemperature/float", waterTemp))
       {
         Serial.println("Temperature PASSED");
       }
@@ -94,20 +94,22 @@ void loop()
       }
     }
   }
-  if(Firebase.ready() && signupOK)
+  if (Firebase.ready() && signupOK)
   {
-    if (Firebase.RTDB.getBool(&fbdo, "servo/bool"))
+    if (Firebase.RTDB.getBool(&fbdo, "embedded/servo/bool"))
     {
-      if(fbdo.boolData())
+      if (fbdo.boolData() == true)
       {
-        Serial1.println("ON");
-        Firebase.RTDB.setBool(&fbdo, "servo/bool", false);
+        Serial.println("Servo ON");
+        myPortTX.println("ON");
+        Firebase.RTDB.setBool(&fbdo, "embedded/servo/bool", false);
+        Firebase.RTDB.setTimestamp(&fbdo, "embedded/servo/timestamp");
       }
     }
     else
     {
       Serial.println("Failed to get Servo status");
     }
-
   }
+  delay(1000);
 }

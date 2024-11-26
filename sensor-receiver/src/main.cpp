@@ -27,7 +27,7 @@ void setup()
 
 void loop()
 {
-  water_level = analogRead(WTL);
+  water_level = map(analogRead(WTL), 0, 2252, 0, 40); 
   tempC = 1 / (log(1 / (4096.0 / analogRead(NTC) - 1)) / 3950 + 1.0 / 298.15) - 273.15;
   data = String(tempC) + "," + String(water_level);
   myPort.println(data);

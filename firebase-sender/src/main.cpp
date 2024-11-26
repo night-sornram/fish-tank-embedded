@@ -9,11 +9,11 @@
 #include "addons/TokenHelper.h"
 #include "addons/RTDBHelper.h"
 
-#define WIFI_SSID "REPLACE_WITH_YOUR_SSID"
-#define WIFI_PASSWORD "REPLACE_WITH_YOUR_PASSWORD"
+#define WIFI_SSID "HONOR90"
+#define WIFI_PASSWORD "1234567890"
 
-#define API_KEY "REPLACE_WITH_YOUR_FIREBASE_PROJECT_API_KEY"
-#define DATABASE_URL "REPLACE_WITH_YOUR_FIREBASE_DATABASE_URL"
+#define API_KEY "AIzaSyC57urbcbeJSmCR3jT85EQtVZ4MMy2Wf78"
+#define DATABASE_URL "https://esp32-firebase-ea973-default-rtdb.asia-southeast1.firebasedatabase.app"
 #define TX_PIN 23
 #define RX_PIN 22
 

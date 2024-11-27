@@ -22,20 +22,25 @@ bool signupOK = false;
 // ===========================
 // Enter your WiFi credentials
 // ===========================
-const char *ssid = "REPLACE_WITH_YOUR_SSID";
-const char *password = "REPLACE_WITH_YOUR_PASSWORD";
+const char *ssid = "REPLACE_WITH_YOUR_WIFI_SSID";
+const char *password = "REPLACE_WITH_YOUR_WIFI_PASSWORD";
 
 void startCameraServer();
 void setupLedFlash(int pin);
 
-String urlencode(String str) {
+String urlencode(String str)
+{
   const char *msg = str.c_str();
   const char *hex = "0123456789ABCDEF";
   String encodedMsg = "";
-  while (*msg != '\0') {
-    if (('a' <= *msg && *msg <= 'z') || ('A' <= *msg && *msg <= 'Z') || ('0' <= *msg && *msg <= '9') || *msg == '-' || *msg == '_' || *msg == '.' || *msg == '~') {
+  while (*msg != '\0')
+  {
+    if (('a' <= *msg && *msg <= 'z') || ('A' <= *msg && *msg <= 'Z') || ('0' <= *msg && *msg <= '9') || *msg == '-' || *msg == '_' || *msg == '.' || *msg == '~')
+    {
       encodedMsg += *msg;
-    } else {
+    }
+    else
+    {
       encodedMsg += '%';
       encodedMsg += hex[(unsigned char)*msg >> 4];
       encodedMsg += hex[*msg & 0xf];
@@ -45,29 +50,34 @@ String urlencode(String str) {
   return encodedMsg;
 }
 
-String Photo2Base64() {
-    camera_fb_t * fb = NULL;
-    fb = esp_camera_fb_get();  
-    if(!fb) {
-      Serial.println("Camera capture failed");
-      return "";
-    }
-  
-    String imageFile = "data:image/jpeg;base64,";
-    char *input = (char *)fb->buf;
-    char output[base64_enc_len(3)];
-    for (int i=0;i<fb->len;i++) {
-      base64_encode(output, (input++), 3);
-      if (i%3==0) imageFile += urlencode(String(output));
-    }
+String Photo2Base64()
+{
+  camera_fb_t *fb = NULL;
+  fb = esp_camera_fb_get();
+  if (!fb)
+  {
+    Serial.println("Camera capture failed");
+    return "";
+  }
 
-    esp_camera_fb_return(fb);
-    
-    return imageFile;
+  String imageFile = "data:image/jpeg;base64,";
+  char *input = (char *)fb->buf;
+  char output[base64_enc_len(3)];
+  for (int i = 0; i < fb->len; i++)
+  {
+    base64_encode(output, (input++), 3);
+    if (i % 3 == 0)
+      imageFile += urlencode(String(output));
+  }
+
+  esp_camera_fb_return(fb);
+
+  return imageFile;
 }
 
 void setup()
 {
+  WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0); //disable brownout detector
   Serial.begin(115200);
   Serial.setDebugOutput(true);
   Serial.println();
@@ -95,7 +105,6 @@ void setup()
     Serial.printf("%s\n", config.signer.signupError.message.c_str());
   }
   config.token_status_callback = tokenStatusCallback;
-
   Firebase.begin(&config, &auth);
   Firebase.reconnectWiFi(true);
 
@@ -203,13 +212,13 @@ void setup()
 
 void loop()
 {
+  if (Firebase.ready() && signupOK)
+  {
     String photoBase64 = Photo2Base64();
-    Serial.println("Sending data to Firebase...");
-    Serial.println(photoBase64);
-    if (Firebase.RTDB.setString(&fbdo, "embedded/photo/", photoBase64)) {
-        Serial.println("Data sent successfully");
-    } else {
-        Serial.printf("Failed to send data: %s\n", fbdo.errorReason().c_str());
+    if (Firebase.RTDB.setString(&fbdo, "embedded/photo/", photoBase64))
+    {
+      Serial.println("Data sent successfully");
     }
-    delay(4000);
+  }
+  delay(1000);
 }

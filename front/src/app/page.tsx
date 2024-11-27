@@ -1,7 +1,7 @@
 "use client";
 import { Button, Card, Image } from "@nextui-org/react";
 import { create } from "zustand";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { getServerData } from "@/libs/getFirebase";
 import { AnimatePresence, motion } from "framer-motion";
 import { updateFirebase } from "@/libs/updateFirebase";
@@ -31,6 +31,8 @@ export default function Home() {
   const { temperature, setTemperature } = useTemperature();
   const { src, setSrc } = useImage();
   const { fedTime, setFedTime } = useFed();
+  const [isLoading, setIsLoading] = useState(true);
+  const [isButtonLoading, setIsButtonLoading] = useState(false);
 
   function formatTimestamp(timestamp: number | string | Date): string {
     const date = new Date(timestamp);
@@ -44,15 +46,26 @@ export default function Home() {
   }
 
   const fetchData = async () => {
-    await getServerData().then((res) => {
-      setWater(res.waterLevel.float);
-      setTemperature(res.waterTemperature.float);
-      setFedTime(formatTimestamp(res.servo.timestamp));
-    });
+    setIsLoading(true);
+    await getServerData()
+      .then((res) => {
+        setWater(res.waterLevel.float);
+        setTemperature(res.waterTemperature.float);
+        setFedTime(formatTimestamp(res.servo.timestamp));
+        setSrc(res.photo);
+      })
+      .then(() => {
+        setIsLoading(false);
+      });
   };
 
   const updateFeed = async () => {
-    await updateFirebase();
+    setIsButtonLoading(true);
+    await updateFirebase().then(() => {
+      setTimeout(() => {
+        setIsButtonLoading(false);
+      }, 3000);
+    });
   };
 
   useEffect(() => {
@@ -81,8 +94,14 @@ export default function Home() {
   return (
     <main className="h-screen w-screen flex p-4  items-center bg-gradient-to-tr from-blue-500 to-blue-50">
       <section className="max-w-screen-lg mx-auto grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div>
-          <Image src={src} />
+        <div className="w-full flex justify-center">
+          <Image
+            src={src}
+            width={320}
+            height={240}
+            isLoading={isLoading}
+            className="object-contain rounded-lg"
+          />
         </div>
 
         <Card shadow="none" className=" p-8 shadow-md">
@@ -137,6 +156,7 @@ export default function Home() {
                   radius="sm"
                   onPress={updateFeed}
                   className="  bg-sky-200 w-full"
+                  isLoading={isButtonLoading}
                 >
                   <h5>feed</h5>
                 </Button>

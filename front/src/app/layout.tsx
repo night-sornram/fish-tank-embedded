@@ -29,7 +29,14 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased prose-sm sm:prose-base prose-headings:m-0 prose-p:m-0 prose-ul:m-0  prose-img:m-0 prose-hr:my-5 `}
       >
-        <NextUI>{children}</NextUI>
+        <NextUI>
+          {children}
+          <section className="absolute flex justify-center items-center bottom-0 right-0 left-0 p-6 text-white">
+            <h5>
+              embedded project: fist-tank. created by ya zee leng diew zoo ling
+            </h5>
+          </section>
+        </NextUI>
       </body>
     </html>
   );

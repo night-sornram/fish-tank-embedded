@@ -5,6 +5,30 @@ import { useEffect, useState } from "react";
 import { getServerData } from "@/libs/getFirebase";
 import { AnimatePresence, motion } from "framer-motion";
 import { updateFirebase } from "@/libs/updateFirebase";
+import DownloadTextFile from "@/components/DownloadText";
+import { Line } from "react-chartjs-2";
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+} from "chart.js";
+
+interface GraphProps {
+  labels: string[];
+  datasets: [
+    {
+      label: string;
+      data: number[];
+      borderColor: string;
+      backgroundColor: string;
+    }
+  ];
+}
 
 const useWater = create<WaterProps>((set) => ({
   water: 0.0,
@@ -17,7 +41,8 @@ const useTemperature = create<TempProps>((set) => ({
 }));
 
 const useImage = create<ImageProps>((set) => ({
-  src: "/images/fishtank.jpg",
+  src: "/",
+  sources: [],
   setSrc: (src) => set({ src: src }),
 }));
 
@@ -26,13 +51,56 @@ const useFed = create<FedTimeProps>((set) => ({
   setFedTime: (date) => set({ fedTime: date }),
 }));
 
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend
+);
+
 export default function Home() {
   const { water, setWater } = useWater();
   const { temperature, setTemperature } = useTemperature();
-  const { src, setSrc } = useImage();
+  const { src, sources, setSrc } = useImage();
   const { fedTime, setFedTime } = useFed();
   const [isLoading, setIsLoading] = useState(true);
   const [isButtonLoading, setIsButtonLoading] = useState(false);
+  const [data, setData] = useState<GraphProps>({
+    labels: [],
+    datasets: [
+      {
+        label: "Water Level",
+        data: [],
+        borderColor: "#ffffff",
+        backgroundColor: "yellow",
+      },
+    ],
+  });
+
+  const [temperatureData, setTemperatureData] = useState<GraphProps>({
+    labels: [],
+    datasets: [
+      {
+        label: "Temperature",
+        data: [],
+        borderColor: "#ffffff",
+        backgroundColor: "green",
+      },
+    ],
+  });
+
+  const options = {
+    scales: {
+      x: {
+        ticks: {
+          maxTicksLimit: 10,
+        },
+      },
+    },
+  };
 
   function formatTimestamp(timestamp: number | string | Date): string {
     const date = new Date(timestamp);
@@ -46,13 +114,65 @@ export default function Home() {
   }
 
   const fetchData = async () => {
-    setIsLoading(true);
     await getServerData()
       .then((res) => {
-        setWater(res.waterLevel.float);
-        setTemperature(res.waterTemperature.float);
-        setFedTime(formatTimestamp(res.servo.timestamp));
-        setSrc(res.photo);
+        setIsLoading(true);
+        if (res.waterLevel.float) {
+          setWater(res.waterLevel.float);
+        }
+        if (res.waterTemperature.float) {
+          setTemperature(res.waterTemperature.float);
+        }
+        if (res.servo.timestamp) {
+          setFedTime(formatTimestamp(res.servo.timestamp));
+        }
+        if (res.photo) {
+          setSrc(res.photo);
+          // sources.push(res.photo);
+        }
+        const currentTime = new Date().toLocaleTimeString();
+        setData((prevData) => {
+          const newLabels = prevData.labels
+            ? [...prevData.labels, currentTime]
+            : [currentTime];
+          const newData =
+            prevData.datasets &&
+            prevData.datasets[0] &&
+            prevData.datasets[0].data
+              ? [...prevData.datasets[0].data, res.waterLevel.float]
+              : [res.waterLevel.float];
+
+          return {
+            labels: newLabels,
+            datasets: [
+              {
+                ...prevData.datasets[0],
+                data: newData,
+              },
+            ],
+          };
+        });
+        setTemperatureData((prevData) => {
+          const newLabels = prevData.labels
+            ? [...prevData.labels, currentTime]
+            : [currentTime];
+          const newData =
+            prevData.datasets &&
+            prevData.datasets[0] &&
+            prevData.datasets[0].data
+              ? [...prevData.datasets[0].data, res.waterTemperature.float]
+              : [res.waterTemperature.float];
+
+          return {
+            labels: newLabels,
+            datasets: [
+              {
+                ...prevData.datasets[0],
+                data: newData,
+              },
+            ],
+          };
+        });
       })
       .then(() => {
         setIsLoading(false);
@@ -64,13 +184,16 @@ export default function Home() {
     await updateFirebase().then(() => {
       setTimeout(() => {
         setIsButtonLoading(false);
-      }, 3000);
+      }, 5000);
     });
   };
 
   useEffect(() => {
     fetchData();
-    const interval = setInterval(fetchData, 3000);
+    const interval = setInterval(() => {
+      fetchData();
+    }, 3000);
+
     return () => clearInterval(interval);
   }, []);
 
@@ -92,13 +215,12 @@ export default function Home() {
   };
 
   return (
-    <main className="h-screen w-screen flex p-4  items-center bg-gradient-to-tr from-blue-500 to-blue-50">
+    <main className="min-h-screen w-screen flex p-4  items-center bg-gradient-to-tr from-blue-500 to-blue-50">
       <section className="max-w-screen-lg mx-auto grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div className="w-full flex justify-center">
+        <div className="w-full flex justify-center h-64">
           <Image
             src={src}
-            width={320}
-            height={240}
+            width={342}
             isLoading={isLoading}
             className="object-contain rounded-lg"
           />
@@ -120,7 +242,7 @@ export default function Home() {
                     y: { type: "spring", stiffness: 300, damping: 30 },
                     opacity: { duration: 0.2 },
                   }}
-                  className="mx-3"
+                  className="mx-3 w-20 flex justify-center"
                 >
                   {temperature}
                 </motion.div>
@@ -165,13 +287,15 @@ export default function Home() {
                 <h5 className="text-sm">Last fed: {fedTime}</h5>
               </div>
             </div>
+            {/* <DownloadTextFile srcs={sources} /> */}
           </div>
         </Card>
-      </section>
-      <section className="absolute flex justify-center items-center bottom-0 right-0 left-0 p-6 text-white">
-        <h5>
-          embedded project: fist-tank. created by ya zee leng diew zoo ling
-        </h5>
+        <div className="col-span-1">
+          <Line data={data} options={options} />
+        </div>
+        <div className="col-span-1">
+          <Line data={temperatureData} options={options} />
+        </div>
       </section>
     </main>
   );

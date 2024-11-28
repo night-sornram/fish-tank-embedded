@@ -10,6 +10,7 @@ interface TempProps {
 
 interface ImageProps {
   src: string;
+  sources: string[];
   setSrc: (src: string) => void;
 }
 

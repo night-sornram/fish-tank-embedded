@@ -8,6 +8,8 @@ export default {
     "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
     "./node_modules/@nextui-org/theme/dist/**/*.{js,ts,jsx,tsx}",
+    "./node_modules/chart.js/dist/**/*.{js,ts,jsx,tsx}",
+    "./node_modules/react-chartjs-2/dist/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
     extend: {

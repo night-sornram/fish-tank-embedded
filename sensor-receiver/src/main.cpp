@@ -27,8 +27,8 @@ void setup()
 
 void loop()
 {
-  water_level = map(analogRead(WTL), 0, 2252, 0, 40); 
-  tempC = 1 / (log(1 / (4096.0 / analogRead(NTC) - 1)) / 3950 + 1.0 / 298.15) - 273.15;
+  water_level = map(analogRead(WTL), 0, 3000, 0, 40) + 40; 
+  tempC = (1 / (log(1 / (4096.0 / analogRead(NTC) - 1)) / 4096 + 1.0 / 298.15) - 273.15) - 5;
   data = String(tempC) + "," + String(water_level);
   myPort.println(data);
   if (myPort.available() > 0)
@@ -41,5 +41,5 @@ void loop()
       servo1.write(0);
     }
   }
-
+  delay(2000);
 }

@@ -6,4 +6,4 @@
 
 backend/node_modules
 backend/dist
-backend/api/.env
+backend/.env

@@ -4,7 +4,11 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import multer from 'multer';
 
-dotenv.config();
+dotenv.config(
+    {
+        path: "../.env"
+    }
+);
 
 const upload = multer({ storage: multer.memoryStorage() });
 const app = express();
@@ -32,6 +36,7 @@ app.post('/upload', async (req, res) => {
         const database = client.db(dbName);
         const collection = database.collection(collectionName);
         const image = req.body.image
+        console.log(image)
         await collection.findOneAndUpdate(
             { _id : new ObjectId(process.env.ID) },
             { $set: { image} },

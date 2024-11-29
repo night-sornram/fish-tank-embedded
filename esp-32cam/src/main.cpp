@@ -10,13 +10,13 @@
 #include <base64.h>
 #include <HTTPClient.h>
 
-const char* serverURL = "REPLACE_WITH_YOUR_SERVER"
+const char* serverURL = "REPLACE_WITH_YOUR_SERVER";
 
 // ===========================
 // Enter your WiFi credentials
 // ===========================
-const char *ssid = "REPLACE_WITH_YOUR_SSID";
-const char *password = "REPLACE_WITH_YOUR_PASSWORD";
+const char *ssid = "REPLACE_WITH_SSID";
+const char *password = "REPLACE_WITH_PASSWORD";
 
 
 

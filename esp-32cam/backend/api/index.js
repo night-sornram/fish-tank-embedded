@@ -32,8 +32,7 @@ app.post('/upload', async (req, res) => {
     try {
         const db = client.db('esp32db');
         const collection = db.collection('images');
-        const image = req
-
+        const image = req.body.image
         await collection.findOneAndUpdate(
             { _id : new ObjectId(process.env.ID) },
             { $set: { image } },

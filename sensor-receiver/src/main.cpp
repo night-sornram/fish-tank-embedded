@@ -41,5 +41,5 @@ void loop()
       servo1.write(0);
     }
   }
-  delay(2000);
+  delay(1000);
 }

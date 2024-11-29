@@ -1,29 +1,24 @@
 #include <Arduino.h>
 #include "esp_camera.h"
 #include <WiFi.h>
-#include <Firebase_ESP_Client.h>
-#include "addons/TokenHelper.h"
-#include "addons/RTDBHelper.h"
-#include "soc/soc.h"
-#include "soc/rtc_cntl_reg.h"
+#include "soc/soc.h"           // Disable brownout detector
+#include "soc/rtc_cntl_reg.h"  // Disable brownout detector
 #include "Base64.h"
 
 #define CAMERA_MODEL_AI_THINKER // Has PSRAM
 #include "camera_pins.h"
 #include <base64.h>
+#include <HTTPClient.h>
 
-#define API_KEY "REPLACE_WITH_YOUR_API_KEY"
-#define DATABASE_URL "REPLACE_WITH_YOUR_DATABASE_URL"
-FirebaseData fbdo;
-FirebaseAuth auth;
-FirebaseConfig config;
-bool signupOK = false;
+const char* serverURL = "REPLACE_WITH_YOUR_SERVER"
 
 // ===========================
 // Enter your WiFi credentials
 // ===========================
-const char *ssid = "REPLACE_WITH_YOUR_WIFI_SSID";
-const char *password = "REPLACE_WITH_YOUR_WIFI_PASSWORD";
+const char *ssid = "REPLACE_WITH_YOUR_SSID";
+const char *password = "REPLACE_WITH_YOUR_PASSWORD";
+
+
 
 void startCameraServer();
 void setupLedFlash(int pin);
@@ -75,6 +70,25 @@ String Photo2Base64()
   return imageFile;
 }
 
+
+void sendImage() {
+    HTTPClient http;
+    String photoBase64 = Photo2Base64();
+
+    http.begin(serverURL);
+    http.addHeader("Content-Type", "application/octet-stream");
+    int httpResponseCode = http.POST(photoBase64);
+    if (httpResponseCode > 0) {
+        String response = http.getString();
+        Serial.println("Response: " + response);
+    } else {
+        Serial.println("Error in sending image");
+    }
+
+    http.end();
+}
+
+
 void setup()
 {
   WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0); //disable brownout detector
@@ -92,21 +106,6 @@ void setup()
   }
   Serial.println("");
   Serial.println("WiFi connected");
-
-  config.api_key = API_KEY;
-  config.database_url = DATABASE_URL;
-  if (Firebase.signUp(&config, &auth, "", ""))
-  {
-    Serial.println("ok");
-    signupOK = true;
-  }
-  else
-  {
-    Serial.printf("%s\n", config.signer.signupError.message.c_str());
-  }
-  config.token_status_callback = tokenStatusCallback;
-  Firebase.begin(&config, &auth);
-  Firebase.reconnectWiFi(true);
 
   camera_config_t config;
   config.ledc_channel = LEDC_CHANNEL_0;
@@ -212,13 +211,7 @@ void setup()
 
 void loop()
 {
-  if (Firebase.ready() && signupOK)
-  {
-    String photoBase64 = Photo2Base64();
-    if (Firebase.RTDB.setString(&fbdo, "embedded/photo/", photoBase64))
-    {
-      Serial.println("Data sent successfully");
-    }
-  }
+  // String photoBase64 = Photo2Base64();
+  sendImage();
   delay(1000);
 }

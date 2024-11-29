@@ -77,7 +77,8 @@ void sendImage() {
 
     http.begin(serverURL);
     http.addHeader("Content-Type", "application/octet-stream");
-    int httpResponseCode = http.POST(photoBase64);
+    String postBody = "{\"image\":\"" + photoBase64 + "\"}";
+    int httpResponseCode = http.POST(postBody);
     if (httpResponseCode > 0) {
         String response = http.getString();
         Serial.println("Response: " + response);

@@ -23,19 +23,18 @@ client.connect((error, client) => {
     console.log(`Connected correctly`)
 });
 
-const dbName = "esp32";
-const collectionName = "image";
-const database = client.db(dbName);
-const collection = database.collection(collectionName);
+
 
 app.post('/upload', async (req, res) => {
     try {
-        const db = client.db('esp32db');
-        const collection = db.collection('images');
+        const dbName = "esp32";
+        const collectionName = "images";
+        const database = client.db(dbName);
+        const collection = database.collection(collectionName);
         const image = req.body.image
         await collection.findOneAndUpdate(
             { _id : new ObjectId(process.env.ID) },
-            { $set: { image } },
+            { $set: { image} },
             { upsert: true }
         )
         res.send('Image uploaded successfully');

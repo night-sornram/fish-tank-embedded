@@ -10,13 +10,13 @@
 #include <base64.h>
 #include <HTTPClient.h>
 
-const char* serverURL = "REPLACE_WITH_YOUR_SERVER";
+const char* serverURL = "https://fish-tank-embedded.vercel.app/upload";
 
 // ===========================
 // Enter your WiFi credentials
 // ===========================
-const char *ssid = "REPLACE_WITH_SSID";
-const char *password = "REPLACE_WITH_PASSWORD";
+const char *ssid = "HONOR90";
+const char *password = "1234567890";
 
 
 
@@ -76,7 +76,7 @@ void sendImage() {
     String photoBase64 = Photo2Base64();
 
     http.begin(serverURL);
-    http.addHeader("Content-Type", "application/octet-stream");
+    http.addHeader("Content-Type", "application/json");
     String postBody = "{\"image\":\"" + photoBase64 + "\"}";
     int httpResponseCode = http.POST(postBody);
     if (httpResponseCode > 0) {

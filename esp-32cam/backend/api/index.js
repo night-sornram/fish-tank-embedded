@@ -36,10 +36,9 @@ app.post('/upload', async (req, res) => {
         const database = client.db(dbName);
         const collection = database.collection(collectionName);
         const image = req.body.image
-        console.log(image)
-        await collection.findOneAndUpdate(
-            { _id : new ObjectId(process.env.ID) },
-            { $set: { image} },
+        await collection.updateOne(
+            { _id: new ObjectId(process.env.ID) },
+            { $set: { image: image } },
             { upsert: true }
         )
         res.send('Image uploaded successfully');

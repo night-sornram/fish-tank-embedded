@@ -2,6 +2,9 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import { NextUI } from "@/providers/NextUI";
+import connectDB from '../../config/connectMongo';
+
+connectDB()
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",

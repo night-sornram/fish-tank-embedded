@@ -17,6 +17,7 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
+import { getImages } from "@/libs/getImage";
 
 interface GraphProps {
   labels: string[];
@@ -126,10 +127,10 @@ export default function Home() {
         if (res.servo.timestamp) {
           setFedTime(formatTimestamp(res.servo.timestamp));
         }
-        if (res.photo) {
-          setSrc(res.photo);
-          // sources.push(res.photo);
-        }
+        // if (res.photo) {
+        //   setSrc(res.photo);
+        //   // sources.push(res.photo);
+        // }
         const currentTime = new Date().toLocaleTimeString();
         setData((prevData) => {
           const newLabels = prevData.labels
@@ -177,6 +178,12 @@ export default function Home() {
       .then(() => {
         setIsLoading(false);
       });
+
+    const imageUrls = await getImages(); 
+    if (Array.isArray(imageUrls) && imageUrls.length > 0) {
+      console.log('Fetched images:', imageUrls);
+      setSrc(imageUrls[0]);
+    }
   };
 
   const updateFeed = async () => {

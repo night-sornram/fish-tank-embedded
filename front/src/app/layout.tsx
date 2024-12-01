@@ -27,18 +27,40 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+
+  const handleRedirect = () => {
+    try {
+      window.open(
+        "https://embed-api-flask-production.up.railway.app",
+        "_blank"
+      );
+    } catch (error) {
+      console.error("Failed to redirect:", error);
+    }
+  };
+
   return (
     <html lang="en">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased prose-sm sm:prose-base prose-headings:m-0 prose-p:m-0 prose-ul:m-0  prose-img:m-0 prose-hr:my-5 `}
       >
         <NextUI>
+
           {children}
-          <section className="absolute flex justify-center items-center bottom-0 right-0 left-0 p-6 text-white">
-            <h5>
-              embedded project: fist-tank. created by ya zee leng diew zoo ling
-            </h5>
+          <section className="absolute flex flex-col justify-center items-center bottom-0 right-0 left-0 p-6">
+            <div className="flex flex-row gap-3">
+              <p>Embedded project: Smart fish-tank</p>
+              <p>Created by ya zee leng diew zoo ling</p>
+            </div>          
+            <div>
+              <a href="https://embed-api-flask-production.up.railway.app" target="_blank">
+                <button className="px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition duration-300">
+                  Get Notify
+                </button>
+              </a> 
+            </div>
           </section>
+
         </NextUI>
       </body>
     </html>

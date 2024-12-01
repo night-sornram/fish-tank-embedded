@@ -4,7 +4,7 @@ import "./globals.css";
 import { NextUI } from "@/providers/NextUI";
 import connectDB from '../../config/connectMongo';
 
-connectDB()
+connectDB();
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -28,40 +28,27 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
 
-  const handleRedirect = () => {
-    try {
-      window.open(
-        "https://embed-api-flask-production.up.railway.app",
-        "_blank"
-      );
-    } catch (error) {
-      console.error("Failed to redirect:", error);
-    }
-  };
-
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased prose-sm sm:prose-base prose-headings:m-0 prose-p:m-0 prose-ul:m-0  prose-img:m-0 prose-hr:my-5 `}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased prose-sm sm:prose-base prose-headings:m-0 prose-p:m-0 prose-ul:m-0 prose-img:m-0 prose-hr:my-5`}
       >
         <NextUI>
-
           {children}
-          <section className="absolute flex flex-col justify-center items-center bottom-0 right-0 left-0 p-6">
-            <div className="flex flex-row gap-3">
+        </NextUI>
+        <footer className="bg-gray-100 py-4 border-t mt-6">
+          <div className="container mx-auto text-center">
+            <div className="flex flex-col items-center gap-2 text-black">
               <p>Embedded project: Smart fish-tank</p>
               <p>Created by ya zee leng diew zoo ling</p>
-            </div>          
-            <div>
-              <a href="https://embed-api-flask-production.up.railway.app" target="_blank">
+              <a href="https://embed-api-flask-production.up.railway.app" target="_blank" rel="noopener noreferrer">
                 <button className="px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition duration-300">
                   Get Notify
                 </button>
-              </a> 
+              </a>
             </div>
-          </section>
-
-        </NextUI>
+          </div>
+        </footer>
       </body>
     </html>
   );

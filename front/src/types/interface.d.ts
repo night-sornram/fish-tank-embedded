@@ -19,3 +19,15 @@ interface FedTimeProps {
 
   setFedTime: (date: string) => void;
 }
+
+interface ClusterProps {
+  clusterNum: number;
+
+  setCluster: (cluster: number) => void;
+}
+
+interface StatusProps {
+  status: string;
+
+  setStatus: (string: string) => void;
+}

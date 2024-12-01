@@ -1,5 +1,6 @@
 "use client";
 import { Button, Card, Image } from "@nextui-org/react";
+import { checkCluster } from "@/libs/checkCluster";
 import { create } from "zustand";
 import { useEffect, useState } from "react";
 import { getServerData } from "@/libs/getFirebase";
@@ -18,6 +19,7 @@ import {
   Legend,
 } from "chart.js";
 import { getImages } from "@/libs/getImage";
+import { Cluster } from "cluster";
 
 interface GraphProps {
   labels: string[];
@@ -52,6 +54,16 @@ const useFed = create<FedTimeProps>((set) => ({
   setFedTime: (date) => set({ fedTime: date }),
 }));
 
+const useCluster = create<ClusterProps>((set) => ({
+  clusterNum: 0,
+  setCluster: (cluster) => set({ clusterNum: cluster }),
+}));
+
+const useStatus = create<StatusProps>((set) => ({
+  status: "unknown",
+  setStatus: (value) => set({ status: value})
+}))
+
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -63,6 +75,8 @@ ChartJS.register(
 );
 
 export default function Home() {
+  const { clusterNum, setCluster } = useCluster();
+  const { status, setStatus } = useStatus();
   const { water, setWater } = useWater();
   const { temperature, setTemperature } = useTemperature();
   const { src, sources, setSrc } = useImage();
@@ -115,76 +129,78 @@ export default function Home() {
   }
 
   const fetchData = async () => {
-    await getServerData()
-      .then((res) => {
+    try {
+        const res = await getServerData();
+
         setIsLoading(true);
-        if (res.waterLevel.float) {
-          setWater(res.waterLevel.float);
+
+        if (res.waterLevel?.float) {
+            setWater(res.waterLevel.float);
         }
-        if (res.waterTemperature.float) {
-          setTemperature(res.waterTemperature.float);
+        if (res.waterTemperature?.float) {
+            setTemperature(res.waterTemperature.float);
         }
-        if (res.servo.timestamp) {
-          setFedTime(formatTimestamp(res.servo.timestamp));
+        if (res.servo?.timestamp) {
+            setFedTime(formatTimestamp(res.servo.timestamp));
         }
-        // if (res.photo) {
-        //   setSrc(res.photo);
-        //   // sources.push(res.photo);
-        // }
+
         const currentTime = new Date().toLocaleTimeString();
+
         setData((prevData) => {
-          const newLabels = prevData.labels
-            ? [...prevData.labels, currentTime]
-            : [currentTime];
-          const newData =
-            prevData.datasets &&
-            prevData.datasets[0] &&
-            prevData.datasets[0].data
-              ? [...prevData.datasets[0].data, res.waterLevel.float]
-              : [res.waterLevel.float];
+            const newLabels = prevData.labels ? [...prevData.labels, currentTime] : [currentTime];
+            const newData = prevData.datasets?.[0]?.data
+                ? [...prevData.datasets[0].data, res.waterLevel.float]
+                : [res.waterLevel.float];
 
-          return {
-            labels: newLabels,
-            datasets: [
-              {
-                ...prevData.datasets[0],
-                data: newData,
-              },
-            ],
-          };
+            return {
+                labels: newLabels,
+                datasets: [
+                    {
+                        ...prevData.datasets[0],
+                        data: newData,
+                    },
+                ],
+            };
         });
+
         setTemperatureData((prevData) => {
-          const newLabels = prevData.labels
-            ? [...prevData.labels, currentTime]
-            : [currentTime];
-          const newData =
-            prevData.datasets &&
-            prevData.datasets[0] &&
-            prevData.datasets[0].data
-              ? [...prevData.datasets[0].data, res.waterTemperature.float]
-              : [res.waterTemperature.float];
+            const newLabels = prevData.labels ? [...prevData.labels, currentTime] : [currentTime];
+            const newData = prevData.datasets?.[0]?.data
+                ? [...prevData.datasets[0].data, res.waterTemperature.float]
+                : [res.waterTemperature.float];
 
-          return {
-            labels: newLabels,
-            datasets: [
-              {
-                ...prevData.datasets[0],
-                data: newData,
-              },
-            ],
-          };
+            return {
+                labels: newLabels,
+                datasets: [
+                    {
+                        ...prevData.datasets[0],
+                        data: newData,
+                    },
+                ],
+            };
         });
-      })
-      .then(() => {
-        setIsLoading(false);
-      });
 
-    const imageUrls = await getImages(); 
-    if (Array.isArray(imageUrls) && imageUrls.length > 0) {
-      console.log('Fetched images:', imageUrls);
-      setSrc(imageUrls[0]);
+        setIsLoading(false);
+
+        const imageUrls = await getImages();
+        if (Array.isArray(imageUrls) && imageUrls.length > 0) {
+            console.log('Fetched images:', imageUrls);
+            setSrc(imageUrls[0]);
+
+            try {
+                const cluster = await checkCluster(imageUrls[0]);
+                console.log(cluster);
+                setCluster(cluster.cluster);
+
+            } catch (error) {
+                console.error('Error processing cluster:', error);
+            }
+        }
+    } catch (error) {
+        console.error('Error in fetchData:', error);
+        setIsLoading(false);
     }
-  };
+};
 
   const updateFeed = async () => {
     setIsButtonLoading(true);
@@ -235,6 +251,26 @@ export default function Home() {
 
         <Card shadow="none" className=" p-8 shadow-md">
           <div className=" flex flex-col gap-4">
+          <h1 className="flex">
+              Cluster:{" "}
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={clusterNum}
+                  custom={1}
+                  variants={numberVariants}
+                  initial="enter"
+                  animate="center"
+                  exit="exit"
+                  transition={{
+                    y: { type: "spring", stiffness: 300, damping: 30 },
+                    opacity: { duration: 0.2 },
+                  }}
+                  className="mx-3 w-20 flex justify-center"
+                >
+                  {clusterNum}
+                </motion.div>
+              </AnimatePresence>
+            </h1>
             <h1 className="flex">
               Temperature:{" "}
               <AnimatePresence mode="wait">
